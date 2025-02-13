@@ -22,17 +22,25 @@ function App() {
   return (
     <div className="container">
       {!submitted ? (
-        <form onSubmit={handleNameSubmit} className="form-container">
-          <input
-            type="text"
-            placeholder="Enter your name"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="text-input"
-            required
-          />
-          <button type="submit" className="submit-button">Submit</button>
-        </form>
+        <div class="outermost-div">
+          <div class="initial-text-container">
+            <h1>Find Out which Celebrity do you look a like!</h1>
+          </div>
+          <div class="form-container-div">
+            <form onSubmit={handleNameSubmit} className="form-container">
+              <h3 class="name-req">What would you like us to call you?</h3>
+              <input
+                type="text"
+                placeholder="Enter your name"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="text-input"
+                required
+              />
+              <button type="submit" className="submit-button">Submit</button>
+            </form>
+          </div>
+        </div>
       ) : (
         <div className="welcome-container">
           <h1>Hello, {username}!</h1>
@@ -47,7 +55,7 @@ function App() {
             </div>
             <input
               type="file"
-              accept="image/*"
+              accept=".png, .jpg, .jpeg"
               onChange={handleFileChange}
               className="file-input"
             />
