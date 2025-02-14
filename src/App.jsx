@@ -17,11 +17,13 @@ function App() {
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
+    if (!file) return; // Prevents errors if user cancels file selection
+  
     setSelectedFile(file);
     setPreview(URL.createObjectURL(file));
     setProcessedImage(defaultPerson); // Reset processed image
   };
-
+  
   const handleSubmitToBackend = async () => {
     if (!selectedFile) {
       alert("Please upload an image first.");
@@ -34,20 +36,22 @@ function App() {
     formData.append("image", selectedFile);
   
     try {
-      console.log("Sending request to backend...");
       const response = await fetch("http://localhost:5000/upload", {
         method: "POST",
         body: formData,
       });
-  
+    
       const data = await response.json();
       console.log("Data from backend:", data);
-  
+    
+      if (data.error) {
+        alert(`Error: ${data.error}`);
+        return;
+      }
+    
       if (data.image_url) {
-        await waitForImage("http://localhost:5000/processed/person.jpg");
-        setProcessedImage("http://localhost:5000/processed/person.jpg"); // Direct request
-      } else {
-        alert("Error processing image.");
+        await waitForImage(data.image_url);
+        setProcessedImage(data.image_url);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -78,7 +82,7 @@ function App() {
       attempts++;
     }
   
-    throw new Error("Processed image not available after multiple attempts.");
+    alert("Processed image not available after multiple attempts.");
   };
   
   return (
