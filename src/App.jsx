@@ -27,25 +27,25 @@ function App() {
       alert("Please upload an image first.");
       return;
     }
-
+  
     setLoading(true);
     const formData = new FormData();
     formData.append("username", username);
     formData.append("image", selectedFile);
-
+  
     try {
       console.log("Sending request to backend...");
       const response = await fetch("http://localhost:5000/upload", {
         method: "POST",
         body: formData,
       });
-
+  
       const data = await response.json();
       console.log("Data from backend:", data);
-
+  
       if (data.image_url) {
-        await waitForImage(data.image_url);
-        setProcessedImage(data.image_url); // Set the processed image in second img tag
+        await waitForImage("http://localhost:5000/processed/person.jpg");
+        setProcessedImage("http://localhost:5000/processed/person.jpg"); // Direct request
       } else {
         alert("Error processing image.");
       }
@@ -60,12 +60,12 @@ function App() {
   const waitForImage = async (imageUrl) => {
     let attempts = 0;
     const maxAttempts = 5;
-
+  
     while (attempts < maxAttempts) {
       try {
         console.log(`Checking image availability: ${imageUrl} (Attempt ${attempts + 1})`);
         const response = await fetch(imageUrl, { method: "HEAD" });
-
+  
         if (response.ok) {
           console.log("Processed image is available!");
           return;
@@ -73,14 +73,14 @@ function App() {
       } catch (error) {
         console.log("Image not available yet...");
       }
-
+  
       await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2s before retrying
       attempts++;
     }
-
+  
     throw new Error("Processed image not available after multiple attempts.");
   };
-
+  
   return (
     <div className="container">
       {!submitted ? (

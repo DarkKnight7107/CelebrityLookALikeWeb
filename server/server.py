@@ -1,8 +1,10 @@
-from flask import Flask, request, jsonify, send_file, url_for
+from flask import Flask, request, jsonify, send_file
 from PIL import Image
+from flask_cors import CORS
 import os
 
 app = Flask(__name__)
+CORS(app)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
@@ -16,29 +18,32 @@ def upload_file():
         return jsonify({"error": "No image provided"}), 400
 
     file = request.files["image"]
-
     if file.filename == "":
         return jsonify({"error": "No selected file"}), 400
 
-    # Save the uploaded image
-    file_path = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(file_path)
+    # Save original uploaded image
+    upload_path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(upload_path)
 
-    # Process the image (Flip Vertically)
-    image = Image.open(file_path)
+    # Open the uploaded image and flip it
+    image = Image.open(upload_path)
     flipped_image = image.transpose(Image.FLIP_TOP_BOTTOM)
 
-    # Save the processed image
-    processed_filename = f"flipped_{file.filename}"
+    # Always save as 'person.jpg' in processed folder
+    processed_filename = "person.jpg"
     processed_path = os.path.join(PROCESSED_FOLDER, processed_filename)
     flipped_image.save(processed_path)
 
-    # Return the URL of the processed image
-    return jsonify({"image_url": url_for('get_processed_image', filename=processed_filename, _external=True)})
+    # Return fixed processed image URL
+    return jsonify({"image_url": "http://localhost:5000/processed/person.jpg"})
 
 @app.route("/processed/<filename>")
 def get_processed_image(filename):
-    return send_file(os.path.join(PROCESSED_FOLDER, filename), mimetype="image/jpeg")
+    """Serve the processed image to the frontend"""
+    file_path = os.path.join(PROCESSED_FOLDER, filename)
+    if os.path.exists(file_path):
+        return send_file(file_path, mimetype="image/jpeg")
+    return jsonify({"error": "File not found"}), 404
 
 if __name__ == "__main__":
     app.run(debug=True)
